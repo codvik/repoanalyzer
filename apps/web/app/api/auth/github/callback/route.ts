@@ -18,5 +18,6 @@ export async function GET(request: Request): Promise<NextResponse> {
   const sessionId = await createSession(user.id);
   setSessionCookie(sessionId);
 
-  return NextResponse.redirect(new URL("/", request.url));
+  const baseUrl = process.env.APP_BASE_URL ?? request.url;
+  return NextResponse.redirect(new URL("/", baseUrl));
 }

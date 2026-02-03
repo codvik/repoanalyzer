@@ -7,10 +7,16 @@ export function buildGitHubAuthUrl(): string | null {
     return null;
   }
 
+  const baseUrl = process.env.APP_BASE_URL;
+  if (!baseUrl) {
+    return null;
+  }
+
   const params = new URLSearchParams({
     client_id: clientId,
     scope: "repo read:discussion",
     allow_signup: "true",
+    redirect_uri: `${baseUrl.replace(/\/$/, "")}/api/auth/github/callback`,
   });
 
   return `https://github.com/login/oauth/authorize?${params.toString()}`;
