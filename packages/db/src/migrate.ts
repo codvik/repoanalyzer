@@ -5,7 +5,8 @@ import { getDbPool, closeDbPool } from "./client";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const MIGRATIONS_DIR = path.join(__dirname, "migrations");
+const DIST_MIGRATIONS_DIR = path.join(__dirname, "migrations");
+const SRC_MIGRATIONS_DIR = path.join(__dirname, "..", "src", "migrations");
 
 async function ensureMigrationsTable(): Promise<void> {
   const db = getDbPool();
@@ -39,14 +40,21 @@ async function applyMigration(id: string, sql: string): Promise<void> {
 async function run(): Promise<void> {
   await ensureMigrationsTable();
   const applied = await loadApplied();
-  const files = await fs.readdir(MIGRATIONS_DIR);
+  let migrationsDir = DIST_MIGRATIONS_DIR;
+  try {
+    await fs.access(migrationsDir);
+  } catch {
+    migrationsDir = SRC_MIGRATIONS_DIR;
+  }
+
+  const files = await fs.readdir(migrationsDir);
   const sorted = files.filter((file) => file.endsWith(".sql")).sort();
 
   for (const file of sorted) {
     if (applied.has(file)) {
       continue;
     }
-    const sql = await fs.readFile(path.join(MIGRATIONS_DIR, file), "utf8");
+    const sql = await fs.readFile(path.join(migrationsDir, file), "utf8");
     await applyMigration(file, sql);
   }
 }

@@ -11,6 +11,7 @@ export type IssueNode = {
   title: string;
   state: string;
   url: string;
+  body: string;
   createdAt: string;
   updatedAt: string;
   author: { login: string } | null;
@@ -32,6 +33,7 @@ const ISSUE_QUERY = `
           title
           state
           url
+          body
           createdAt
           updatedAt
           author {

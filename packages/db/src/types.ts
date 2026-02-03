@@ -26,3 +26,39 @@ export type IssueUpsertInput = {
   updatedAt: Date;
   rawPayload: unknown;
 };
+
+export type PullRequestUpsertInput = {
+  repoId: string;
+  pullRequestId: string;
+  pullRequestNumber: number;
+  title: string;
+  state: string;
+  url: string;
+  authorLogin: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  rawPayload: unknown;
+};
+
+export type DiscussionUpsertInput = {
+  repoId: string;
+  discussionId: string;
+  number: number;
+  title: string;
+  state: string;
+  url: string;
+  authorLogin: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  rawPayload: unknown;
+};
+
+export type DocumentUpsertInput = {
+  docId: string;
+  source: string;
+  type: string;
+  repoId: string;
+  itemId: string;
+  payload: unknown;
+  updatedAt: Date;
+};
