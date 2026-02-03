@@ -1,0 +1,17 @@
+{
+  "name": "github-ingestion-system",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.12.1",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev:ingest": "pnpm --filter @app/ingest dev",
+    "ingest": "pnpm --filter @app/ingest start",
+    "migrate": "pnpm --filter @app/db migrate"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

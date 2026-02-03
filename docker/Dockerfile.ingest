@@ -1,0 +1,16 @@
+FROM node:20-alpine AS base
+WORKDIR /app
+RUN corepack enable
+COPY package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json ./
+COPY packages ./packages
+RUN pnpm install
+RUN pnpm --filter @app/ingest build
+
+FROM node:20-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+RUN corepack enable
+COPY --from=base /app/package.json /app/pnpm-workspace.yaml ./
+COPY --from=base /app/node_modules ./node_modules
+COPY --from=base /app/packages ./packages
+CMD ["node", "packages/ingest/dist/index.js"]

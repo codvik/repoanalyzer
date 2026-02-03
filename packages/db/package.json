@@ -1,0 +1,15 @@
+{
+  "name": "@app/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts",
+    "migrate": "tsx src/migrate.ts"
+  },
+  "dependencies": {
+    "pg": "^8.12.0"
+  }
+}

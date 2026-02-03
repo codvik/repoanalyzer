@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingest-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ingest-worker
+  template:
+    metadata:
+      labels:
+        app: ingest-worker
+    spec:
+      containers:
+        - name: ingest
+          image: your-registry/ingest:latest
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: REDIS_URL
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GITHUB_TOKEN
+            - name: ENV
+              value: production
+            - name: LOG_LEVEL
+              value: info
