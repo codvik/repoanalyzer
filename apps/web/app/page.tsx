@@ -34,10 +34,12 @@ export default function Page() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [issues, setIssues] = useState<any[]>([]);
   const [prs, setPrs] = useState<any[]>([]);
   const [discussions, setDiscussions] = useState<any[]>([]);
   const [repoId, setRepoId] = useState<string>("");
+  const [loadingData, setLoadingData] = useState(false);
   const [auth, setAuth] = useState<{ authenticated: boolean; login?: string | null }>({
     authenticated: false,
   });
@@ -45,6 +47,7 @@ export default function Page() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    setSuccess(false);
     const parsed = parseRepoInput(input);
     if (!parsed) {
       setError("Enter a repo URL or owner/repo");
@@ -69,6 +72,8 @@ export default function Page() {
       const data = (await response.json()) as { repoId?: string };
       const resolvedRepoId = data.repoId || `${parsed.owner}/${parsed.name}`;
       setRepoId(resolvedRepoId);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
       setError(err.message ?? "Ingestion failed");
     } finally {
@@ -86,25 +91,30 @@ export default function Page() {
   useEffect(() => {
     const loadData = async () => {
       if (!repoId) return;
-      const [issuesRes, prsRes, discussionsRes] = await Promise.all([
-        fetch(`/api/issues?repoId=${repoId}`),
-        fetch(`/api/pull-requests?repoId=${repoId}`),
-        fetch(`/api/discussions?repoId=${repoId}`),
-      ]);
-      if (issuesRes.ok) {
-        const data = await issuesRes.json();
-        setIssues(data.items ?? []);
-      }
-      if (prsRes.ok) {
-        const data = await prsRes.json();
-        setPrs(data.items ?? []);
-      }
-      if (discussionsRes.ok) {
-        const data = await discussionsRes.json();
-        setDiscussions(data.items ?? []);
+      setLoadingData(true);
+      try {
+        const [issuesRes, prsRes, discussionsRes] = await Promise.all([
+          fetch(`/api/issues?repoId=${repoId}`),
+          fetch(`/api/pull-requests?repoId=${repoId}`),
+          fetch(`/api/discussions?repoId=${repoId}`),
+        ]);
+        if (issuesRes.ok) {
+          const data = await issuesRes.json();
+          setIssues(data.items ?? []);
+        }
+        if (prsRes.ok) {
+          const data = await prsRes.json();
+          setPrs(data.items ?? []);
+        }
+        if (discussionsRes.ok) {
+          const data = await discussionsRes.json();
+          setDiscussions(data.items ?? []);
+        }
+      } finally {
+        setLoadingData(false);
       }
     };
-    loadData().catch(() => {});
+    loadData().catch(() => { });
   }, [repoId]);
 
   return (
@@ -141,6 +151,15 @@ export default function Page() {
           </button>
         </form>
         {error && <p className="error">{error}</p>}
+        {success && (
+          <div className="success-message">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="2" />
+              <path d="M6 10l3 3 5-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Repository ingested successfully!
+          </div>
+        )}
       </section>
 
       <section className="panel">
