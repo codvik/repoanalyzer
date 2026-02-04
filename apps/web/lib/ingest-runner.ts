@@ -1,4 +1,4 @@
-import { IngestionCursorRepository, IngestionCursorService, IssueRepository, PullRequestRepository, DiscussionRepository, withAdvisoryLock } from "@app/db";
+import { IngestionCursorRepository, IngestionCursorService, IssueRepository, PullRequestRepository, DiscussionRepository, IssueCommentRepository, PullRequestCommentRepository, DiscussionCommentRepository, withAdvisoryLock } from "@app/db";
 import { IncrementalSyncEngine } from "../../../packages/ingest/src/incremental-sync/engine";
 import type { EntitySyncConfig } from "../../../packages/ingest/src/incremental-sync/types";
 import { requestGraphQLWithToken } from "./github-client";
@@ -42,6 +42,14 @@ export type DiscussionNode = {
   author: { login: string } | null;
   labels: { nodes: Array<{ name: string }> } | null;
   comments: { totalCount: number } | null;
+};
+
+type CommentNode = {
+  id: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+  author: { login: string } | null;
 };
 
 const ISSUE_QUERY = `
@@ -95,12 +103,64 @@ const DISCUSSION_QUERY = `
   }
 `;
 
+const COMMENT_QUERY = `
+  query NodeComments($id: ID!, $cursor: String) {
+    node(id: $id) {
+      ... on Issue {
+        comments(first: 100, after: $cursor) {
+          nodes { id body createdAt updatedAt author { login } }
+          pageInfo { endCursor hasNextPage }
+        }
+      }
+      ... on PullRequest {
+        comments(first: 100, after: $cursor) {
+          nodes { id body createdAt updatedAt author { login } }
+          pageInfo { endCursor hasNextPage }
+        }
+      }
+      ... on Discussion {
+        comments(first: 100, after: $cursor) {
+          nodes { id body createdAt updatedAt author { login } }
+          pageInfo { endCursor hasNextPage }
+        }
+      }
+    }
+  }
+`;
+
+async function fetchAllComments(token: string, nodeId: string): Promise<CommentNode[]> {
+  let cursor: string | null = null;
+  let hasNextPage = true;
+  const all: CommentNode[] = [];
+
+  while (hasNextPage) {
+    const response = await requestGraphQLWithToken<any>(token, COMMENT_QUERY, {
+      id: nodeId,
+      cursor,
+    });
+    const node = response.data?.node;
+    const comments = node?.comments;
+    if (!comments) {
+      break;
+    }
+    const nodes = comments.nodes ?? [];
+    all.push(...nodes);
+    cursor = comments.pageInfo?.endCursor ?? null;
+    hasNextPage = Boolean(comments.pageInfo?.hasNextPage);
+  }
+
+  return all;
+}
+
 export async function runIngestion(db: any, repoId: string, owner: string, name: string, token: string): Promise<void> {
   const cursorRepo = new IngestionCursorRepository(db);
   const cursorService = new IngestionCursorService(cursorRepo);
   const issueRepo = new IssueRepository(db);
   const pullRequestRepo = new PullRequestRepository(db);
   const discussionRepo = new DiscussionRepository(db);
+  const issueCommentRepo = new IssueCommentRepository(db);
+  const pullRequestCommentRepo = new PullRequestCommentRepository(db);
+  const discussionCommentRepo = new DiscussionCommentRepository(db);
 
   const engine = new IncrementalSyncEngine({ cursorService, logger: console });
 
@@ -127,6 +187,22 @@ export async function runIngestion(db: any, repoId: string, owner: string, name:
           rawPayload: issue,
         })),
       );
+
+      for (const issue of nodes) {
+        const comments = await fetchAllComments(token, issue.id);
+        await issueCommentRepo.upsertComments(
+          comments.map((comment) => ({
+            repoId,
+            issueId: issue.id,
+            commentId: comment.id,
+            authorLogin: comment.author?.login ?? null,
+            body: comment.body,
+            createdAt: new Date(comment.createdAt),
+            updatedAt: new Date(comment.updatedAt),
+            rawPayload: comment,
+          })),
+        );
+      }
     },
     extractUpdatedAt: (issue) => new Date(issue.updatedAt),
   };
@@ -154,6 +230,22 @@ export async function runIngestion(db: any, repoId: string, owner: string, name:
           rawPayload: pr,
         })),
       );
+
+      for (const pr of nodes) {
+        const comments = await fetchAllComments(token, pr.id);
+        await pullRequestCommentRepo.upsertComments(
+          comments.map((comment) => ({
+            repoId,
+            pullRequestId: pr.id,
+            commentId: comment.id,
+            authorLogin: comment.author?.login ?? null,
+            body: comment.body,
+            createdAt: new Date(comment.createdAt),
+            updatedAt: new Date(comment.updatedAt),
+            rawPayload: comment,
+          })),
+        );
+      }
     },
     extractUpdatedAt: (pr) => new Date(pr.updatedAt),
   };
@@ -181,6 +273,22 @@ export async function runIngestion(db: any, repoId: string, owner: string, name:
           rawPayload: discussion,
         })),
       );
+
+      for (const discussion of nodes) {
+        const comments = await fetchAllComments(token, discussion.id);
+        await discussionCommentRepo.upsertComments(
+          comments.map((comment) => ({
+            repoId,
+            discussionId: discussion.id,
+            commentId: comment.id,
+            authorLogin: comment.author?.login ?? null,
+            body: comment.body,
+            createdAt: new Date(comment.createdAt),
+            updatedAt: new Date(comment.updatedAt),
+            rawPayload: comment,
+          })),
+        );
+      }
     },
     extractUpdatedAt: (discussion) => new Date(discussion.updatedAt),
   };

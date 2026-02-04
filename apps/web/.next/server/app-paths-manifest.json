@@ -1,5 +1,14 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/analyze/route": "app/api/analyze/route.js",
+  "/api/export/route": "app/api/export/route.js",
+  "/api/issues/route": "app/api/issues/route.js",
+  "/api/ingest/route": "app/api/ingest/route.js",
+  "/api/discussions/route": "app/api/discussions/route.js",
+  "/api/pull-requests/route": "app/api/pull-requests/route.js",
   "/api/me/route": "app/api/me/route.js",
+  "/page": "app/page.js",
+  "/api/report/route": "app/api/report/route.js",
   "/api/auth/github/route": "app/api/auth/github/route.js",
-  "/page": "app/page.js"
+  "/api/auth/github/callback/route": "app/api/auth/github/callback/route.js"
 }

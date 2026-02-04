@@ -133,6 +133,11 @@ export default function Page() {
               Sign in with GitHub
             </a>
           )}
+          {repoId ? (
+            <a className="button outline" href={`/api/export?repoId=${repoId}`}>
+              Download Full Export
+            </a>
+          ) : null}
         </div>
       </section>
 

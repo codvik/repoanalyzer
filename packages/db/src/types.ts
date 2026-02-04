@@ -62,3 +62,36 @@ export type DocumentUpsertInput = {
   payload: unknown;
   updatedAt: Date;
 };
+
+export type IssueCommentUpsertInput = {
+  repoId: string;
+  issueId: string;
+  commentId: string;
+  authorLogin: string | null;
+  body: string;
+  createdAt: Date;
+  updatedAt: Date;
+  rawPayload: unknown;
+};
+
+export type PullRequestCommentUpsertInput = {
+  repoId: string;
+  pullRequestId: string;
+  commentId: string;
+  authorLogin: string | null;
+  body: string;
+  createdAt: Date;
+  updatedAt: Date;
+  rawPayload: unknown;
+};
+
+export type DiscussionCommentUpsertInput = {
+  repoId: string;
+  discussionId: string;
+  commentId: string;
+  authorLogin: string | null;
+  body: string;
+  createdAt: Date;
+  updatedAt: Date;
+  rawPayload: unknown;
+};

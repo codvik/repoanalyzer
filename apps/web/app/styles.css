@@ -288,6 +288,18 @@ h1 {
   overflow: hidden;
 }
 
+.button.outline {
+  background: transparent;
+  color: #2f1f15;
+  border: 1px solid #2f1f15;
+  box-shadow: none;
+}
+
+.button.outline:hover {
+  background: #2f1f15;
+  color: #fffaf4;
+}
+
 .button::before {
   content: '';
   position: absolute;

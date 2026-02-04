@@ -58,6 +58,36 @@ type DocumentUpsertInput = {
     payload: unknown;
     updatedAt: Date;
 };
+type IssueCommentUpsertInput = {
+    repoId: string;
+    issueId: string;
+    commentId: string;
+    authorLogin: string | null;
+    body: string;
+    createdAt: Date;
+    updatedAt: Date;
+    rawPayload: unknown;
+};
+type PullRequestCommentUpsertInput = {
+    repoId: string;
+    pullRequestId: string;
+    commentId: string;
+    authorLogin: string | null;
+    body: string;
+    createdAt: Date;
+    updatedAt: Date;
+    rawPayload: unknown;
+};
+type DiscussionCommentUpsertInput = {
+    repoId: string;
+    discussionId: string;
+    commentId: string;
+    authorLogin: string | null;
+    body: string;
+    createdAt: Date;
+    updatedAt: Date;
+    rawPayload: unknown;
+};
 
 declare class IngestionCursorRepository {
     private readonly db;
@@ -98,9 +128,27 @@ declare class DocumentRepository {
     upsertDocuments(items: DocumentUpsertInput[]): Promise<void>;
 }
 
+declare class IssueCommentRepository {
+    private readonly db;
+    constructor(db: Pool | PoolClient);
+    upsertComments(items: IssueCommentUpsertInput[]): Promise<void>;
+}
+
+declare class PullRequestCommentRepository {
+    private readonly db;
+    constructor(db: Pool | PoolClient);
+    upsertComments(items: PullRequestCommentUpsertInput[]): Promise<void>;
+}
+
+declare class DiscussionCommentRepository {
+    private readonly db;
+    constructor(db: Pool | PoolClient);
+    upsertComments(items: DiscussionCommentUpsertInput[]): Promise<void>;
+}
+
 declare function getDbPool(): Pool;
 declare function closeDbPool(): Promise<void>;
 
 declare function withAdvisoryLock<T>(db: Pool | PoolClient, key: string, fn: () => Promise<T>): Promise<T>;
 
-export { DiscussionRepository, type DiscussionUpsertInput, DocumentRepository, type DocumentUpsertInput, type IngestionCursor, IngestionCursorRepository, IngestionCursorService, type IngestionEntityType, IssueRepository, type IssueUpsertInput, PullRequestRepository, type PullRequestUpsertInput, type UpsertIngestionCursorInput, closeDbPool, getDbPool, withAdvisoryLock };
+export { DiscussionCommentRepository, type DiscussionCommentUpsertInput, DiscussionRepository, type DiscussionUpsertInput, DocumentRepository, type DocumentUpsertInput, type IngestionCursor, IngestionCursorRepository, IngestionCursorService, type IngestionEntityType, IssueCommentRepository, type IssueCommentUpsertInput, IssueRepository, type IssueUpsertInput, PullRequestCommentRepository, type PullRequestCommentUpsertInput, PullRequestRepository, type PullRequestUpsertInput, type UpsertIngestionCursorInput, closeDbPool, getDbPool, withAdvisoryLock };
