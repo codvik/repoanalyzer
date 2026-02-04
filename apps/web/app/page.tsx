@@ -55,6 +55,11 @@ export default function Page() {
     }
 
     setLoading(true);
+    const resolvedRepoId = `${parsed.owner}/${parsed.name}`;
+    setRepoId(resolvedRepoId);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("lastRepoId", resolvedRepoId);
+    }
     try {
       const response = await fetch("/api/ingest", {
         method: "POST",
@@ -70,8 +75,12 @@ export default function Page() {
       }
 
       const data = (await response.json()) as { repoId?: string };
-      const resolvedRepoId = data.repoId || `${parsed.owner}/${parsed.name}`;
-      setRepoId(resolvedRepoId);
+      if (data.repoId) {
+        setRepoId(data.repoId);
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("lastRepoId", data.repoId);
+        }
+      }
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
@@ -86,6 +95,13 @@ export default function Page() {
       .then((res) => res.json())
       .then((data) => setAuth(data))
       .catch(() => setAuth({ authenticated: false }));
+
+    if (typeof window !== "undefined") {
+      const stored = window.localStorage.getItem("lastRepoId");
+      if (stored) {
+        setRepoId(stored);
+      }
+    }
   }, []);
 
   useEffect(() => {
