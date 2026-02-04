@@ -134,7 +134,16 @@ async function fetchAllComments(token: string, nodeId: string): Promise<CommentN
   const all: CommentNode[] = [];
 
   while (hasNextPage) {
-    const response = await requestGraphQLWithToken<any>(token, COMMENT_QUERY, {
+    const response: {
+      data?: {
+        node?: {
+          comments?: {
+            nodes?: CommentNode[];
+            pageInfo?: { endCursor?: string | null; hasNextPage?: boolean };
+          };
+        };
+      };
+    } = await requestGraphQLWithToken(token, COMMENT_QUERY, {
       id: nodeId,
       cursor,
     });
