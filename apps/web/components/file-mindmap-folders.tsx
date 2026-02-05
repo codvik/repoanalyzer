@@ -63,16 +63,16 @@ export function FileMindMapFolders({
     const g = svg.append("g");
 
     const zoom = d3
-      .zoom<SVGSVGElement, unknown>()
+      .zoom()
       .scaleExtent([0.1, 3])
-      .on("zoom", (event) => g.attr("transform", event.transform));
+      .on("zoom", (event: any) => g.attr("transform", event.transform));
     svg.call(zoom as any);
 
     const tree = d3
-      .tree<FileHierarchyNode>()
+      .tree()
       // folders-only is much lighter; make it more horizontal for readability
       .nodeSize([32, 320])
-      .separation((a, b) => (a.parent === b.parent ? 1.25 : 1.55));
+      .separation((a: any, b: any) => (a.parent === b.parent ? 1.25 : 1.55));
 
     const root = d3.hierarchy(treeData);
 
@@ -95,9 +95,9 @@ export function FileMindMapFolders({
     collapseDeep(root);
 
     const linkGen = d3
-      .linkHorizontal<any, any>()
-      .x((d) => d.y)
-      .y((d) => d.x);
+      .linkHorizontal()
+      .x((d: any) => d.y)
+      .y((d: any) => d.x);
 
     let i = 0;
 
@@ -120,7 +120,7 @@ export function FileMindMapFolders({
       const links = layout.links();
 
       const linkSel = g
-        .selectAll<SVGPathElement, any>(".link")
+        .selectAll(".link")
         .data(links, (d: any) => d.target.id || (d.target.id = ++i));
 
       linkSel
@@ -142,11 +142,11 @@ export function FileMindMapFolders({
         .merge(linkSel as any)
         .transition()
         .duration(t)
-        .attr("d", (d) => linkGen(d) as string)
+        .attr("d", (d: any) => linkGen(d) as string)
         .attr("stroke-opacity", 1);
 
       const nodeSel = g
-        .selectAll<SVGGElement, any>(".node")
+        .selectAll(".node")
         .data(nodes, (d: any) => d.id || (d.id = ++i));
 
       nodeSel
@@ -162,7 +162,7 @@ export function FileMindMapFolders({
         .attr("class", "node")
         .attr("transform", () => `translate(${source.y0 ?? source.y ?? 0},${source.x0 ?? source.x ?? 0})`)
         .attr("opacity", 0)
-        .on("click", (_event, d: any) => {
+        .on("click", (_event: any, d: any) => {
           if (onSelectPath) {
             onSelectPath(d.data.path);
           }
@@ -182,7 +182,7 @@ export function FileMindMapFolders({
         .attr("fill", (d: any) => (d.data.path === selectedPath ? "#2563eb" : "#93c5fd"))
         .attr("stroke", "#ffffff")
         .attr("stroke-width", 2)
-        .on("mouseenter", (event, d: any) => {
+        .on("mouseenter", (event: any, d: any) => {
           const tooltip = tooltipRef.current;
           if (!tooltip) return;
           tooltip.style.opacity = "1";

@@ -83,7 +83,7 @@ export function FileTreemap({ files, fullscreen = false, onToggleFullscreen }: P
     const g = svg.append("g");
 
     const color = d3
-      .scaleSequential<number, string>()
+      .scaleSequential()
       .domain([0, 10])
       .interpolator(d3.interpolateBlues);
 
@@ -92,21 +92,21 @@ export function FileTreemap({ files, fullscreen = false, onToggleFullscreen }: P
 
       // NOTE: `treemap()` returns a `HierarchyRectangularNode` with x0/x1/y0/y1.
       const root = d3
-        .treemap<FileHierarchyNode>()
+        .treemap()
         .size([width, height])
         .paddingInner(1)
         .paddingOuter(2)(
           d3
-            .hierarchy<FileHierarchyNode>(focusNode)
-            .sum((d) => (d.type === "file" ? 1 : 0))
-            .sort((a, b) => (b.value ?? 0) - (a.value ?? 0)),
+            .hierarchy(focusNode)
+            .sum((d: any) => (d.type === "file" ? 1 : 0))
+            .sort((a: any, b: any) => (b.value ?? 0) - (a.value ?? 0)),
         );
 
       const nodes = root.descendants();
       const t = animate ? g.transition().duration(duration) : g;
 
       const rect = g
-        .selectAll<SVGRectElement, any>("rect")
+        .selectAll("rect")
         .data(nodes, (d: any) => d.data.path || d.data.name);
 
       rect.exit().remove();
@@ -118,7 +118,7 @@ export function FileTreemap({ files, fullscreen = false, onToggleFullscreen }: P
         .attr("ry", 3)
         .attr("stroke", "rgba(255,255,255,0.9)")
         .attr("stroke-width", 0.7)
-        .on("mousemove", (event, d: any) => {
+        .on("mousemove", (event: any, d: any) => {
           const tooltip = tooltipRef.current;
           if (!tooltip) return;
           tooltip.style.opacity = "1";
@@ -136,7 +136,7 @@ export function FileTreemap({ files, fullscreen = false, onToggleFullscreen }: P
         .on("mouseleave", () => {
           if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
         })
-        .on("click", (_event, d: any) => {
+        .on("click", (_event: any, d: any) => {
           if (d.data.type !== "folder") return;
           if (!d.data.path) return;
           setFocusPath(d.data.path);
@@ -153,7 +153,7 @@ export function FileTreemap({ files, fullscreen = false, onToggleFullscreen }: P
         .attr("height", (d: any) => Math.max(0, d.y1 - d.y0));
 
       const labels = g
-        .selectAll<SVGTextElement, any>("text")
+        .selectAll("text")
         .data(
           nodes.filter((d: any) => (d.x1 - d.x0) > 90 && (d.y1 - d.y0) > 18),
           (d: any) => d.data.path || d.data.name,

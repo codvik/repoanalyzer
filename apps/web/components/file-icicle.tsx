@@ -84,7 +84,7 @@ export function FileIcicle({ files, fullscreen = false, onToggleFullscreen }: Pr
         .attr("ry", 3)
         .attr("stroke", "rgba(255,255,255,0.9)")
         .attr("stroke-width", 0.7)
-        .on("mousemove", (event, d: any) => {
+        .on("mousemove", (event: any, d: any) => {
           const tooltip = tooltipRef.current;
           if (!tooltip) return;
           tooltip.style.opacity = "1";
@@ -97,7 +97,7 @@ export function FileIcicle({ files, fullscreen = false, onToggleFullscreen }: Pr
         .on("mouseleave", () => {
           if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
         })
-        .on("click", (_event, d: any) => zoomTo(d));
+        .on("click", (_event: any, d: any) => zoomTo(d));
 
       rectEnter.merge(rect as any).attr("fill", (d: any) => color(d.depth));
 
@@ -109,7 +109,7 @@ export function FileIcicle({ files, fullscreen = false, onToggleFullscreen }: Pr
 
       const labels = g
         .selectAll("text")
-        .data(nodes.filter((d) => (x(d.y1) - x(d.y0)) > 90 && (y(d.x1) - y(d.x0)) > 18), (d: any) => d.data.path || d.data.name);
+        .data(nodes.filter((d: any) => (x(d.y1) - x(d.y0)) > 90 && (y(d.x1) - y(d.x0)) > 18), (d: any) => d.data.path || d.data.name);
 
       labels.exit().remove();
 

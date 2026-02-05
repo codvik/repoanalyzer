@@ -45,17 +45,17 @@ export function FileMindMap({ files, fullscreen = false, onToggleFullscreen }: P
     svg.attr("width", "100%").attr("height", height);
     const g = svg.append("g");
 
-    const zoom = d3.zoom<SVGSVGElement, unknown>()
+    const zoom = d3.zoom()
       .scaleExtent([0.1, 3])
-      .on("zoom", (event) => g.attr("transform", event.transform));
+      .on("zoom", (event: any) => g.attr("transform", event.transform));
 
     svg.call(zoom as any);
 
     const tree = d3
-      .tree<MindMapNode>()
+      .tree()
       // x = vertical spacing, y = horizontal spacing
       .nodeSize([36, 360])
-      .separation((a, b) => (a.parent === b.parent ? 1.35 : 1.7));
+      .separation((a: any, b: any) => (a.parent === b.parent ? 1.35 : 1.7));
     const root = d3.hierarchy(treeData);
 
     const collapseDeep = (node: any) => {
@@ -125,7 +125,7 @@ export function FileMindMap({ files, fullscreen = false, onToggleFullscreen }: P
       const nodeEnter = node.enter().append("g")
         .attr("class", "node")
         .attr("transform", () => `translate(${source.y0 ?? source.y ?? 0},${source.x0 ?? source.x ?? 0})`)
-        .on("click", (_event, d: any) => {
+        .on("click", (_event: any, d: any) => {
           if (d.children) {
             d._children = d.children;
             d.children = undefined;
@@ -141,7 +141,7 @@ export function FileMindMap({ files, fullscreen = false, onToggleFullscreen }: P
         .attr("fill", (d: any) => colorFor(d.data.name, d.data.type))
         .attr("stroke", "#fff")
         .attr("stroke-width", 2)
-        .on("mouseenter", (event, d: any) => {
+        .on("mouseenter", (event: any, d: any) => {
           const tooltip = tooltipRef.current;
           if (!tooltip) return;
           tooltip.style.opacity = "1";
