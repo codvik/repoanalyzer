@@ -47,21 +47,22 @@ export function FileIcicle({ files, fullscreen = false, onToggleFullscreen }: Pr
     svg.selectAll("*").remove();
     svg.attr("width", "100%").attr("height", height);
 
-    // NOTE: `d3.partition()` returns a `HierarchyRectangularNode` (with x0/x1/y0/y1).
+    // NOTE: `d3` is intentionally treated as untyped (see `apps/web/d3.d.ts`).
+    // Avoid passing type arguments (e.g. `partition<T>()`) so CI builds don't fail.
     const root = d3
-      .partition<FileHierarchyNode>()
+      .partition()
       .size([height, width])(
         d3
-          .hierarchy<FileHierarchyNode>(data)
-          .sum((d) => (d.type === "file" ? 1 : 0))
-          .sort((a, b) => (b.value ?? 0) - (a.value ?? 0)),
+          .hierarchy(data)
+          .sum((d: any) => (d.type === "file" ? 1 : 0))
+          .sort((a: any, b: any) => (b.value ?? 0) - (a.value ?? 0)),
       );
 
     const x = d3.scaleLinear().domain([0, width]).range([0, width]);
     const y = d3.scaleLinear().domain([0, height]).range([0, height]);
 
     const color = d3
-      .scaleSequential<number, string>()
+      .scaleSequential()
       .domain([0, Math.max(1, root.height)])
       .interpolator(d3.interpolateBlues);
 
@@ -71,7 +72,7 @@ export function FileIcicle({ files, fullscreen = false, onToggleFullscreen }: Pr
       const nodes = root.descendants();
 
       const rect = g
-        .selectAll<SVGRectElement, any>("rect")
+        .selectAll("rect")
         .data(nodes, (d: any) => d.data.path || d.data.name);
 
       rect.exit().remove();
@@ -107,7 +108,7 @@ export function FileIcicle({ files, fullscreen = false, onToggleFullscreen }: Pr
         .attr("height", (d: any) => Math.max(0, y(d.x1) - y(d.x0)));
 
       const labels = g
-        .selectAll<SVGTextElement, any>("text")
+        .selectAll("text")
         .data(nodes.filter((d) => (x(d.y1) - x(d.y0)) > 90 && (y(d.x1) - y(d.x0)) > 18), (d: any) => d.data.path || d.data.name);
 
       labels.exit().remove();
@@ -136,14 +137,14 @@ export function FileIcicle({ files, fullscreen = false, onToggleFullscreen }: Pr
 
       const t = g.transition().duration(duration);
 
-      g.selectAll<SVGRectElement, any>("rect")
+      g.selectAll("rect")
         .transition(t as any)
         .attr("x", (d: any) => nextX(d.y0))
         .attr("y", (d: any) => nextY(d.x0))
         .attr("width", (d: any) => Math.max(0, nextX(d.y1) - nextX(d.y0)))
         .attr("height", (d: any) => Math.max(0, nextY(d.x1) - nextY(d.x0)));
 
-      g.selectAll<SVGTextElement, any>("text")
+      g.selectAll("text")
         .transition(t as any)
         .attr("x", (d: any) => nextX(d.y0) + 6)
         .attr("y", (d: any) => nextY(d.x0) + 14)
